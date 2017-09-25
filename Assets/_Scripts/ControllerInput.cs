@@ -4,8 +4,10 @@ using UnityEngine;
 
 public class ControllerInput : MonoBehaviour {
 
-    public Transform rightControllerSphere;
-    public Transform leftControllerSphere;
+    public LineRenderer rightLineRenderer;
+
+    public Transform rightController;
+    public Transform leftController;
 
 	// Use this for initialization
 	void Start () {
@@ -14,10 +16,19 @@ public class ControllerInput : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-        if(OVRInput.Get(OVRInput.Button.PrimaryHandTrigger) || OVRInput.Get(OVRInput.Button.PrimaryIndexTrigger))
+
+  //      laserLineRenderer.SetPosition(0, rightController.transform.position);
+//        laserLineRenderer.SetPosition(1, rightController.transform.forward);
+
+        if (OVRInput.Get(OVRInput.Button.PrimaryHandTrigger) || OVRInput.Get(OVRInput.Button.PrimaryIndexTrigger))
         {
-            Debug.Log("button pressed");
+            rightLineRenderer.enabled = true;
+
             RaycastRightContoller();
+            
+        }
+        else{
+            rightLineRenderer.enabled=false;
         }
 		
 	}
@@ -25,10 +36,18 @@ public class ControllerInput : MonoBehaviour {
     private void RaycastRightContoller()
     {
         RaycastHit hit;
-        if (Physics.Raycast(rightControllerSphere.position, rightControllerSphere.forward, out hit)){
+        Ray ray = new Ray(rightController.position, rightController.forward);
+
+        rightLineRenderer.SetPosition(0, ray.origin);
+        rightLineRenderer.SetPosition(1, ray.GetPoint(500));
+       // Debug.DrawLine(ray.origin, ray.GetPoint(10));
+
+
+        if (Physics.Raycast(ray, out hit)){
             if (hit.collider.gameObject.CompareTag("Sphere"))
             {
                 Destroy(hit.collider.gameObject);
+                
             }
         }
     }
