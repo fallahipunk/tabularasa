@@ -23,7 +23,7 @@ public class ControllerInput : MonoBehaviour {
         {
             rightControllerSphere.gameObject.SetActive(true);
 
-            if (OVRInput.Get(OVRInput.Button.PrimaryHandTrigger) || OVRInput.Get(OVRInput.Button.PrimaryHandTrigger))
+            if (OVRInput.Get(OVRInput.Button.PrimaryHandTrigger) || OVRInput.Get(OVRInput.Button.PrimaryIndexTrigger))
             {
 
                 rightLineRenderer.enabled = true;
@@ -83,8 +83,8 @@ public class ControllerInput : MonoBehaviour {
         if (Physics.Raycast(ray, out hit)){
             if (hit.collider.gameObject.CompareTag("Sphere"))
             {
-                destroySphere(hit.collider.gameObject);
-                
+                StartCoroutine("fadeSphere", hit.collider.gameObject);
+
             }
         }
     }
@@ -104,17 +104,33 @@ public class ControllerInput : MonoBehaviour {
         {
             if (hit.collider.gameObject.CompareTag("Sphere"))
             {
-                destroySphere(hit.collider.gameObject);
+
+                StartCoroutine ("fadeSphere", hit.collider.gameObject);
 
             }
         }
     }
 
-    private void destroySphere(GameObject sphere)
+    IEnumerator fadeSphere(GameObject sphere)
     {
+        // Destroy(sphere);
+        // sphereCounter--;
+        //  Debug.Log(sphereCounter);
+
+ 
+
+       // Renderer r = sphere.GetComponent<Renderer>();
+        //Color c = r.material.color;
+        for (float f = 1f; f >= 0; f -= 0.007f)
+        {
+            if (sphere != null)
+            {
+                sphere.transform.localScale = new Vector3(f, f, f);
+            }
+            yield return null;
+        }
+
         Destroy(sphere);
-        sphereCounter--;
-        Debug.Log(sphereCounter);
     }
     
 }
