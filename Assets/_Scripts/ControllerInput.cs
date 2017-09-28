@@ -6,7 +6,7 @@ public class ControllerInput : MonoBehaviour {
 
     public LineRenderer rightLineRenderer;
 
-    public int sphereCounter;
+    //public int sphereCounter;
     public Transform rightControllerSphere;
     public Transform leftControllerSphere;
 
@@ -121,7 +121,7 @@ public class ControllerInput : MonoBehaviour {
 
        // Renderer r = sphere.GetComponent<Renderer>();
         //Color c = r.material.color;
-        for (float f = 1f; f >= 0; f -= 0.007f)
+        for (float f = sphere.transform.localScale.x; f >= 0; f -= 0.007f)
         {
             if (sphere != null)
             {
