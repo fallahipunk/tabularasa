@@ -1,15 +1,17 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class ControllerInput : MonoBehaviour {
 
     public LineRenderer rightLineRenderer;
 
-    //public int sphereCounter;
-    public Transform rightControllerSphere;
-    public Transform leftControllerSphere;
+    // //public int sphereCounter;
+    // public Transform rightControllerSphere;
+    // public Transform leftControllerSphere;
 
+private bool startFollowing;
 	// Use this for initialization
 	void Start () {
 		
@@ -18,98 +20,54 @@ public class ControllerInput : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
-       // Check if right touch contoller is connected
-        if (OVRInput.IsControllerConnected(OVRInput.Controller.RTouch))
-        {
-            rightControllerSphere.gameObject.SetActive(true);
 
-            if (OVRInput.Get(OVRInput.Button.PrimaryHandTrigger) || OVRInput.Get(OVRInput.Button.PrimaryIndexTrigger))
-            {
-
-                rightLineRenderer.enabled = true;
-
-                RaycastRightContoller();
-
-            }
-            else
-            {
-                rightLineRenderer.enabled = false;
-            }
-        }
-
-        //if the rigt contoller is not connected disable the right contoller sphere
-        else
-        {
-            rightControllerSphere.gameObject.SetActive(false);
-        }
-
-       // check  if left contoller is connected
-
-        if (OVRInput.IsControllerConnected(OVRInput.Controller.LTouch))
-        {
-            leftControllerSphere.gameObject.SetActive(true);
-            if (OVRInput.Get(OVRInput.Button.PrimaryHandTrigger) || OVRInput.Get(OVRInput.Button.PrimaryIndexTrigger))
-            {
-
-                rightLineRenderer.enabled = true;
-
-                RaycastLeftContoller();
-
-            }
-            else
-            {
-                rightLineRenderer.enabled = false;
-            }
-        }
-
-        //if the left contoller is not connected disable the left contoller sphere
-        else
-        {
-            leftControllerSphere.gameObject.SetActive(false);
-        }
     }
 
-    private void RaycastRightContoller()
+public void StartFollowing(InputAction.CallbackContext context)
+{
+    if (context.phase == InputActionPhase.Performed)
+        startFollowing = true;
+    else if (context.phase == InputActionPhase.Canceled)
+        startFollowing = false;
+    //Debug.Log("Start following: " + context.phase.ToString());
+}
+
+public void Pan(InputAction.CallbackContext context){
+    if (startFollowing)
     {
-       
-        Ray ray = new Ray(rightControllerSphere.position, rightControllerSphere.forward);
-        RaycastHit hit;
+        Vector2 val = 0.1f*context.ReadValue<Vector2>();
+    // float speed = 3.5f;
+        transform.Rotate(new Vector3(val.y,val.x,0));
+//         Camera.main.transform.Rotate(new Vector3(val.y*speed, -val.x * speed, 0));
+             float X = transform.rotation.eulerAngles.x;
+            float Y = transform.rotation.eulerAngles.y;
+            transform.rotation = Quaternion.Euler(X, Y, 0);
 
-        rightLineRenderer.SetPosition(0, ray.origin);
-        rightLineRenderer.SetPosition(1, ray.GetPoint(500));
-
-
-
-        if (Physics.Raycast(ray, out hit)){
-            if (hit.collider.gameObject.CompareTag("Sphere"))
-            {
-                StartCoroutine("fadeSphere", hit.collider.gameObject);
-
-            }
-        }
+            // Debug.Log(transform.rotation.eulerAngles.ToString());
     }
+}
 
-    private void RaycastLeftContoller()
-    {
+    // private void RaycastLeftContoller()
+    // {
 
-        Ray ray = new Ray(leftControllerSphere.position, leftControllerSphere.forward);
-        RaycastHit hit;
+    //     Ray ray = new Ray(leftControllerSphere.position, leftControllerSphere.forward);
+    //     RaycastHit hit;
 
-        rightLineRenderer.SetPosition(0, ray.origin);
-        rightLineRenderer.SetPosition(1, ray.GetPoint(500));
+    //     rightLineRenderer.SetPosition(0, ray.origin);
+    //     rightLineRenderer.SetPosition(1, ray.GetPoint(500));
 
 
 
-        if (Physics.Raycast(ray, out hit))
-        {
-            if (hit.collider.gameObject.CompareTag("Sphere"))
-            {
+    //     if (Physics.Raycast(ray, out hit))
+    //     {
+    //         if (hit.collider.gameObject.CompareTag("Sphere"))
+    //         {
 
-                StartCoroutine ("fadeSphere", hit.collider.gameObject);
+    //             StartCoroutine ("fadeSphere", hit.collider.gameObject);
 
-            }
-        }
-    }
+    //         }
+    //     }
+    // }
 
     IEnumerator fadeSphere(GameObject sphere)
     {
