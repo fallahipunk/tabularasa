@@ -5,7 +5,7 @@ using UnityEngine;
 public class ControllerInput : MonoBehaviour {
 
     // constants
-    const float HOLD_THRESHOLD = 0.25f; // threshold of time (in seconds) after which we consider mouse click/touch to be a "hold" instead of click
+    const float HOLD_THRESHOLD = 0.15f; // threshold of time (in seconds) after which we consider mouse click/touch to be a "hold" instead of click
 
     // component and object references (linked through inspector)
     //public LineRenderer lineRenderer;
@@ -46,12 +46,15 @@ public class ControllerInput : MonoBehaviour {
         if (startFollowing)
         {
             mouseHoldDuration += Time.deltaTime;
-            var delta = rotationScale*(Input.mousePosition - lastMousePos);
+            if (mouseHoldDuration >= HOLD_THRESHOLD)
+            { 
+                var delta = rotationScale*(Input.mousePosition - lastMousePos);
+                float rotationX = transform.localEulerAngles.y + delta.x;
+                rotationY += delta.y;
+                rotationY = Mathf.Clamp(rotationY, -89.9f, 89.9f);
+                transform.localEulerAngles = new Vector3(-rotationY, rotationX, 0);
+            }
             lastMousePos = Input.mousePosition;
-            float rotationX = transform.localEulerAngles.y + delta.x;
-            rotationY += delta.y;
-            rotationY = Mathf.Clamp(rotationY, -89.9f, 89.9f);
-            transform.localEulerAngles = new Vector3(-rotationY, rotationX, 0);
         }
     }
 
