@@ -1,73 +1,78 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 public class ControllerInput : MonoBehaviour {
 
-    public LineRenderer rightLineRenderer;
+    // constants
+    const float HOLD_THRESHOLD = 0.25f; // threshold of time (in seconds) after which we consider mouse click/touch to be a "hold" instead of click
 
-    // //public int sphereCounter;
-    // public Transform rightControllerSphere;
-    // public Transform leftControllerSphere;
+    // component and object references (linked through inspector)
+    //public LineRenderer lineRenderer;
+    public Camera mainCam;
+    
+    // class variables
+    float mouseHoldDuration = 0f; // how long its been since we were holding the mouse/touch (to determine hold vs click)
+    bool startFollowing = false; // a flag to determin whether or not we pushed the mouse/touch down to start following and orbiting the camera
+    Vector3 lastMousePos; // last stored mouse/touch position
+    float rotationScale = 0.1f; // scale factor to convert screen size to rotation
+    float rotationY = 0f; // to keep track of up-down rotation
 
-private bool startFollowing;
-	// Use this for initialization
-	void Start () {
-		
-	}
-	
-	// Update is called once per frame
-	void Update () {
+    // Update is called once per frame
+    void Update () {
+        if (Input.touchSupported)
+        {
+            // use touch input
+        }
+        else
+        {
+            // use mouse input
+            if (Input.GetMouseButtonDown(0))
+            {
+                startFollowing = true;
+                lastMousePos = Input.mousePosition;
+                mouseHoldDuration = 0;
+            }
+            if (Input.GetMouseButtonUp(0))
+            {
+                startFollowing = false;
+                // was this a click and not a hold/drag?
+                if (mouseHoldDuration < HOLD_THRESHOLD)
+                    ClickHandler(Input.mousePosition);
+            }
+        }
 
-
+        // rotate screen
+        if (startFollowing)
+        {
+            mouseHoldDuration += Time.deltaTime;
+            var delta = rotationScale*(Input.mousePosition - lastMousePos);
+            lastMousePos = Input.mousePosition;
+            float rotationX = transform.localEulerAngles.y + delta.x;
+            rotationY += delta.y;
+            rotationY = Mathf.Clamp(rotationY, -89.9f, 89.9f);
+            transform.localEulerAngles = new Vector3(-rotationY, rotationX, 0);
+        }
     }
 
-public void StartFollowing(InputAction.CallbackContext context)
-{
-    if (context.phase == InputActionPhase.Performed)
-        startFollowing = true;
-    else if (context.phase == InputActionPhase.Canceled)
-        startFollowing = false;
-    //Debug.Log("Start following: " + context.phase.ToString());
-}
-
-public void Pan(InputAction.CallbackContext context){
-    if (startFollowing)
+    private void ClickHandler(Vector3 mousePos)
     {
-        Vector2 val = 0.1f*context.ReadValue<Vector2>();
-    // float speed = 3.5f;
-        transform.Rotate(new Vector3(val.y,val.x,0));
-//         Camera.main.transform.Rotate(new Vector3(val.y*speed, -val.x * speed, 0));
-             float X = transform.rotation.eulerAngles.x;
-            float Y = transform.rotation.eulerAngles.y;
-            transform.rotation = Quaternion.Euler(X, Y, 0);
+        //Ray ray = new Ray(leftControllerSphere.position, leftControllerSphere.forward);
+        Ray ray = mainCam.ScreenPointToRay(mousePos);
+        RaycastHit hit;
 
-            // Debug.Log(transform.rotation.eulerAngles.ToString());
+        //lineRenderer.SetPosition(0, ray.origin);
+        //lineRenderer.SetPosition(1, ray.GetPoint(500));
+
+        if (Physics.Raycast(ray, out hit))
+        {
+            if (hit.collider.gameObject.CompareTag("Sphere"))
+            {
+
+                StartCoroutine("fadeSphere", hit.collider.gameObject);
+            }
+        }
     }
-}
-
-    // private void RaycastLeftContoller()
-    // {
-
-    //     Ray ray = new Ray(leftControllerSphere.position, leftControllerSphere.forward);
-    //     RaycastHit hit;
-
-    //     rightLineRenderer.SetPosition(0, ray.origin);
-    //     rightLineRenderer.SetPosition(1, ray.GetPoint(500));
-
-
-
-    //     if (Physics.Raycast(ray, out hit))
-    //     {
-    //         if (hit.collider.gameObject.CompareTag("Sphere"))
-    //         {
-
-    //             StartCoroutine ("fadeSphere", hit.collider.gameObject);
-
-    //         }
-    //     }
-    // }
 
     IEnumerator fadeSphere(GameObject sphere)
     {
