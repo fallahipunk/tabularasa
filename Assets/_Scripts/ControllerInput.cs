@@ -61,7 +61,8 @@ public class ControllerInput : MonoBehaviour {
     private void ClickHandler(Vector3 mousePos)
     {
         //Ray ray = new Ray(leftControllerSphere.position, leftControllerSphere.forward);
-        Ray ray = mainCam.ScreenPointToRay(mousePos);
+        //Ray ray = mainCam.ScreenPointToRay(mousePos);
+        Ray ray = mainCam.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
         RaycastHit hit;
 
         //lineRenderer.SetPosition(0, ray.origin);
