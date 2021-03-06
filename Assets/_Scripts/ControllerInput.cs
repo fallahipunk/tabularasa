@@ -18,6 +18,12 @@ public class ControllerInput : MonoBehaviour {
     float rotationScale = 0.1f; // scale factor to convert screen size to rotation
     float rotationY = 0f; // to keep track of up-down rotation
 
+    private void Awake()
+    {
+        Cursor.visible = false;
+        Cursor.lockState = CursorLockMode.Locked;
+        //lastMousePos = Input.mousePosition;
+    }
     // Update is called once per frame
     void Update () {
         if (Input.touchSupported)
@@ -26,18 +32,19 @@ public class ControllerInput : MonoBehaviour {
         }
         else
         {
+            startFollowing = true;
             // use mouse input
-            if (Input.GetMouseButtonDown(0))
-            {
-                startFollowing = true;
-                lastMousePos = Input.mousePosition;
-                mouseHoldDuration = 0;
-            }
+            //if (Input.GetMouseButtonDown(0))
+            //{
+            //    startFollowing = true;
+            //    lastMousePos = Input.mousePosition;
+            //    //mouseHoldDuration = 0;
+            //}
             if (Input.GetMouseButtonUp(0))
             {
-                startFollowing = false;
+                //startFollowing = false;
                 // was this a click and not a hold/drag?
-                if (mouseHoldDuration < HOLD_THRESHOLD)
+                //if (mouseHoldDuration < HOLD_THRESHOLD)
                     ClickHandler(Input.mousePosition);
             }
         }
@@ -45,16 +52,17 @@ public class ControllerInput : MonoBehaviour {
         // rotate screen
         if (startFollowing)
         {
-            mouseHoldDuration += Time.deltaTime;
-            if (mouseHoldDuration >= HOLD_THRESHOLD)
-            { 
-                var delta = rotationScale*(Input.mousePosition - lastMousePos);
-                float rotationX = transform.localEulerAngles.y + delta.x;
-                rotationY += delta.y;
+            //mouseHoldDuration += Time.deltaTime;
+            //if (mouseHoldDuration >= HOLD_THRESHOLD)
+            //{ 
+                //var delta = rotationScale*(Input.mousePosition - lastMousePos);
+
+                float rotationX = transform.localEulerAngles.y +  Input.GetAxis("Mouse X");
+                rotationY +=  Input.GetAxis("Mouse Y");
                 rotationY = Mathf.Clamp(rotationY, -89.9f, 89.9f);
                 transform.localEulerAngles = new Vector3(-rotationY, rotationX, 0);
-            }
-            lastMousePos = Input.mousePosition;
+            //}
+            //lastMousePos = Input.mousePosition;
         }
     }
 
