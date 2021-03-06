@@ -14,63 +14,66 @@ public class ControllerInput : MonoBehaviour {
     // class variables
     float mouseHoldDuration = 0f; // how long its been since we were holding the mouse/touch (to determine hold vs click)
     bool startFollowing = false; // a flag to determin whether or not we pushed the mouse/touch down to start following and orbiting the camera
-    Vector3 lastMousePos; // last stored mouse/touch position
-    float rotationScale = 0.1f; // scale factor to convert screen size to rotation
+    float touchRotationScale = 0.1f; // scale factor to convert screen size to rotation (for touch)
     float rotationY = 0f; // to keep track of up-down rotation
 
     private void Awake()
     {
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Locked;
-        //lastMousePos = Input.mousePosition;
     }
     // Update is called once per frame
     void Update () {
         if (Input.GetKey(KeyCode.Escape)) { Application.Quit(); }
-        if (Input.touchSupported)
+        Vector2 delta = Vector2.zero;
+
+        if (Input.touchCount > 0)
         {
-            // use touch input
+            // get touch input
+            Touch t = Input.GetTouch(0);
+            switch (t.phase)
+            {
+                case TouchPhase.Began:
+                    startFollowing = true;
+                    mouseHoldDuration = 0;
+                    break;
+                case TouchPhase.Moved:
+                    delta = touchRotationScale * t.deltaPosition;
+                    break;
+                case TouchPhase.Stationary:
+                    break;
+                case TouchPhase.Ended:
+                    startFollowing = false;
+                    if (mouseHoldDuration < HOLD_THRESHOLD) { ClickHandler(); }
+                    break;
+                case TouchPhase.Canceled:
+                    startFollowing = false;
+                    if (mouseHoldDuration < HOLD_THRESHOLD) { ClickHandler(); }
+                    break;
+                default:
+                    break;
+            }
         }
         else
         {
             startFollowing = true;
-            // use mouse input
-            //if (Input.GetMouseButtonDown(0))
-            //{
-            //    startFollowing = true;
-            //    lastMousePos = Input.mousePosition;
-            //    //mouseHoldDuration = 0;
-            //}
-            if (Input.GetMouseButtonUp(0))
-            {
-                //startFollowing = false;
-                // was this a click and not a hold/drag?
-                //if (mouseHoldDuration < HOLD_THRESHOLD)
-                    ClickHandler(Input.mousePosition);
-            }
+            delta = new Vector2(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y"));
+            if (Input.GetMouseButtonUp(0)) { ClickHandler(); }
         }
 
         // rotate screen
         if (startFollowing)
         {
-            //mouseHoldDuration += Time.deltaTime;
-            //if (mouseHoldDuration >= HOLD_THRESHOLD)
-            //{ 
-                //var delta = rotationScale*(Input.mousePosition - lastMousePos);
-
-                float rotationX = transform.localEulerAngles.y +  Input.GetAxis("Mouse X");
-                rotationY +=  Input.GetAxis("Mouse Y");
-                rotationY = Mathf.Clamp(rotationY, -89.9f, 89.9f);
-                transform.localEulerAngles = new Vector3(-rotationY, rotationX, 0);
-            //}
-            //lastMousePos = Input.mousePosition;
+            mouseHoldDuration += Time.deltaTime;
+            float rotationX = transform.localEulerAngles.y +  delta.x;
+            rotationY +=  delta.y;
+            rotationY = Mathf.Clamp(rotationY, -89.9f, 89.9f);
+            transform.localEulerAngles = new Vector3(-rotationY, rotationX, 0);
         }
     }
 
-    private void ClickHandler(Vector3 mousePos)
+    private void ClickHandler()
     {
-        //Ray ray = new Ray(leftControllerSphere.position, leftControllerSphere.forward);
-        //Ray ray = mainCam.ScreenPointToRay(mousePos);
         Ray ray = mainCam.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
         RaycastHit hit;
 
@@ -81,7 +84,6 @@ public class ControllerInput : MonoBehaviour {
         {
             if (hit.collider.gameObject.CompareTag("Sphere"))
             {
-
                 StartCoroutine("fadeSphere", hit.collider.gameObject);
             }
         }
